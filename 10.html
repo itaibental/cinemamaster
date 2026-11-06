@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>מנטור קולנועי - 10 התחנות</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Heebo & Rubik -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                        heading: ['Rubik', 'sans-serif']
+                    },
+                    colors: {
+                        cinema: {
+                            gold: '#F59E0B',
+                            amber: '#D97706',
+                            dark: '#0F172A',
+                            surface: '#1E293B',
+                            card: '#182234',
+                            border: '#334155',
+                            accent: '#3B82F6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* סגנונות מותאמים לטלפון נייד ולעברית */
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* מניעת קפיצות בגלילה ועיצוב scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        .chat-bubble-ai {
+            border-bottom-right-radius: 4px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            text-align: right;
+            direction: rtl;
+            unicode-bidi: plaintext;
+        }
+
+        .chat-bubble-user {
+            border-bottom-left-radius: 4px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            text-align: right;
+            direction: rtl;
+            unicode-bidi: plaintext;
+        }
+
+        /* אנימציית כתיבה */
+        .typing-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .clapperboard-stripe {
+            background: repeating-linear-gradient(
+                -45deg,
+                #000,
+                #000 10px,
+                #f59e0b 10px,
+                #f59e0b 20px
+            );
+        }
+    </style>
+</head>
+<body class="bg-[#0B0F19] text-slate-100 flex flex-col h-[100dvh] overflow-hidden antialiased select-none" dir="rtl">
+
+    <!-- מסך התחברות ייעודי (מופיע לפני הכניסה לאפליקציה) -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-[#0B0F19] flex items-center justify-center p-4 overflow-y-auto" dir="rtl">
+        <div class="fixed inset-0 pointer-events-none opacity-30 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/25 via-slate-900/60 to-transparent"></div>
+        
+        <div class="relative w-full max-w-sm bg-slate-900/90 border border-slate-700/80 rounded-3xl p-6 shadow-2xl backdrop-blur-xl z-10 text-right space-y-5">
+            <!-- לוגו וכותרת מסך התחברות -->
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/30 text-2xl">
+                    <i class="fa-solid fa-clapperboard"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white font-heading">מנטור קולנועי לבגרות</h2>
+                <p class="text-xs text-slate-400">התחברו כדי לשמור את השיחות ופיתוח 10 התחנות של הסרט שלכם</p>
+            </div>
+
+            <!-- טופס פרטי תלמיד -->
+            <form id="studentLoginForm" onsubmit="handleStudentLogin(event)" class="space-y-4">
+                <!-- שם התלמיד -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-300">שם מלא של היוצר/ת:</label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="studentNameInput" 
+                            required 
+                            placeholder="לדוגמה: איתי לוי / נועה כהן"
+                            class="w-full bg-slate-950/80 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition shadow-inner"
+                        />
+                        <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- בחירת מגדר / לשון פנייה -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-300">לשון פנייה של המנטור:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="relative flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-700 bg-slate-950/50 cursor-pointer hover:border-slate-500 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
+                            <input type="radio" name="studentGender" value="male" checked class="accent-amber-500">
+                            <span class="text-xs font-medium text-slate-200">יוצר (זכר)</span>
+                        </label>
+                        <label class="relative flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-700 bg-slate-950/50 cursor-pointer hover:border-slate-500 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
+                            <input type="radio" name="studentGender" value="female" class="accent-amber-500">
+                            <span class="text-xs font-medium text-slate-200">יוצרת (נקבה)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- התחברות חשבון גוגל / סנכרון ג'מיני -->
+                <div class="pt-2">
+                    <button 
+                        type="button" 
+                        id="googleLoginBtn"
+                        onclick="handleGoogleButtonClick(event)"
+                        class="w-full bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-900 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-3 shadow-lg transition text-xs select-none"
+                    >
+                        <!-- אייקון Google מקורי ב-SVG -->
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.15C3.25 21.37 7.34 24 12 24z"/>
+                            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.27C.46 8.2 0 10.04 0 12s.46 3.8 1.27 5.42l4.01-3.15z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.63 1.27 6.58l4.01 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                        </svg>
+                        <span id="googleBtnText">התחברות עם חשבון Google</span>
+                    </button>
+                    <p class="text-[10px] text-center text-slate-500 mt-2">סנכרון מאובטח לחשבון האישי שלך לשמירת כל שלבי ההפקה</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- שכבת רקע מעוצבת -->
+    <div class="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent z-0"></div>
+
+    <!-- כותרת ראשית קבועה למעלה -->
+    <header class="relative z-10 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-lg">
+        <div class="flex items-center gap-2.5">
+            <button onclick="toggleStationsDrawer()" class="p-2 -mr-1 text-slate-300 hover:text-amber-400 active:scale-95 transition-transform" title="רשימת תחנות">
+                <i class="fa-solid fa-bars-staggered text-lg"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-md shadow-amber-500/20">
+                    <i class="fa-solid fa-video text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                        מנטור קולנועי
+                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30 font-medium">10 התחנות</span>
+                    </h1>
+                    <div class="flex items-center gap-1.5">
+                        <p id="headerSubtitle" class="text-[11px] text-slate-400 font-medium truncate max-w-[140px]">תחנה 1: רעיון ותחקיר</p>
+                        <span id="cloudSyncIndicator" class="text-[10px] text-emerald-400 flex items-center gap-1">
+                            <i class="fa-solid fa-cloud text-[9px]"></i>
+                            <span>נשמר</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+            <!-- כפתור פרופיל תלמיד -->
+            <button onclick="openProfileModal()" id="userProfileBtn" class="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 text-xs transition" title="פרופיל">
+                <i class="fa-solid fa-circle-user text-amber-400"></i>
+                <span id="headerUserName" class="max-w-[70px] truncate text-[11px]">תלמיד</span>
+            </button>
+            <button onclick="openInfoModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition" title="עזרה ודגשים לתחנה">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i>
+            </button>
+            <button onclick="openResetModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 flex items-center justify-center text-xs transition" title="איפוס שיחה">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- תיבת הזנת הודעה והצעות מהירות ממוקמות בראש העמוד ישירות תחת ה-Header -->
+    <section class="relative z-20 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 py-2 space-y-2 shadow-xl" dir="rtl">
+        <!-- תצוגה מקדימה לתמונה מצורפת -->
+        <div id="imagePreviewContainer" class="hidden max-w-2xl mx-auto flex items-center justify-between bg-slate-800/90 border border-amber-500/40 rounded-xl px-2.5 py-1.5 shadow-md">
+            <div class="flex items-center gap-2 overflow-hidden">
+                <img id="imagePreviewThumb" src="" alt="תצוגה מקדימה" class="w-10 h-10 object-cover rounded-lg border border-slate-600 shrink-0">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-semibold text-amber-300 truncate">רפרנס / תמונה צורפה לניתוח</p>
+                    <p id="imagePreviewName" class="text-[10px] text-slate-400 truncate max-w-[170px]">image.png</p>
+                </div>
+            </div>
+            <button type="button" onclick="clearSelectedImage()" class="w-7 h-7 rounded-full bg-slate-700/80 hover:bg-rose-900/60 text-slate-300 hover:text-rose-300 flex items-center justify-center transition" title="הסר תמונה">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <form id="chatForm" onsubmit="handleUserSubmit(event)" class="max-w-2xl mx-auto bg-slate-950/95 border border-slate-700 rounded-2xl p-1.5 pr-2 pl-2 flex items-end gap-1.5 shadow-inner focus-within:border-amber-500/70 transition-colors">
+            <!-- כפתור העלאת תמונה -->
+            <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageSelection(event)">
+            <button 
+                type="button" 
+                onclick="document.getElementById('imageFileInput').click()" 
+                id="uploadImageBtn"
+                class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 border border-slate-700/80 transition active:scale-95"
+                title="צרף רפרנס / תמונה (לוקיישן, פלור פלאן, שוט וכו')"
+            >
+                <i class="fa-solid fa-image text-sm"></i>
+            </button>
+
+            <div class="flex-1 px-1 py-1 flex items-center min-w-0">
+                <textarea 
+                    id="userInput" 
+                    rows="1" 
+                    dir="rtl"
+                    placeholder="פרט/י כאן, או העלה/י תמונה והסבר/י מה רואים בה..."
+                    class="w-full bg-transparent text-slate-100 placeholder-slate-400 text-sm focus:outline-none resize-none max-h-[35vh] py-1 leading-relaxed overflow-y-auto text-right"
+                    oninput="autoResizeTextarea(this)"
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+            </div>
+            <button 
+                type="submit" 
+                id="sendBtn"
+                class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-90 text-slate-950 font-bold flex items-center justify-center shrink-0 shadow-md shadow-amber-500/30 transition disabled:opacity-40 disabled:pointer-events-none"
+                title="שליחה"
+            >
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </button>
+        </form>
+
+        <!-- שורת כפתורי פעולה אוטומטיים קבועים -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" dir="rtl">
+            <button 
+                type="button" 
+                onclick="triggerQuickAction('options')"
+                class="text-[11px] font-semibold bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 active:scale-95 text-amber-300 px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0 transition flex items-center gap-1.5 shadow-sm"
+            >
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-[10px]"></i>
+                <span>הצע לי כמה אפשרויות לבחירה</span>
+            </button>
+
+            <button 
+                type="button" 
+                onclick="triggerQuickAction('references')"
+                class="text-[11px] font-semibold bg-blue-500/15 border border-blue-500/40 hover:bg-blue-500/25 active:scale-95 text-blue-300 px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0 transition flex items-center gap-1.5 shadow-sm"
+            >
+                <i class="fa-solid fa-film text-blue-400 text-[10px]"></i>
+                <span>תציע לי רפרנסים להסתמך עליהם</span>
+            </button>
+
+            <button 
+                type="button" 
+                onclick="triggerQuickAction('summary')"
+                class="text-[11px] font-semibold bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/25 active:scale-95 text-emerald-300 px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0 transition flex items-center gap-1.5 shadow-sm"
+            >
+                <i class="fa-solid fa-clipboard-check text-emerald-400 text-[10px]"></i>
+                <span>סכם את עיקרי התכנון שלי עד כה</span>
+            </button>
+        </div>
+
+        <!-- אזור הצעות לשאלות מקדמות (Quick prompts) -->
+        <div id="suggestionChips" class="overflow-x-auto no-scrollbar flex gap-1.5 pb-0.5" dir="rtl">
+            <!-- נוצר דינמית -->
+        </div>
+    </section>
+
+    <!-- פס בחירת תחנה מהירה (גלילה אופקית) -->
+    <nav class="relative z-10 bg-slate-900/70 border-b border-slate-800/80 px-2 py-1.5 overflow-x-auto no-scrollbar flex gap-1.5 shrink-0" dir="rtl">
+        <div id="quickStationPills" class="flex gap-1.5 whitespace-nowrap"></div>
+    </nav>
+
+    <!-- אזור הצגת פרטי התחנה הפעילה -->
+    <div id="stationBanner" class="relative z-10 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border-b border-amber-500/20 px-3.5 py-1.5 flex items-center justify-between text-xs" dir="rtl">
+        <div class="flex items-center gap-2 overflow-hidden">
+            <span id="bannerStationNum" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-[11px] shrink-0">תחנה 1</span>
+            <span id="bannerStationTitle" class="text-slate-200 font-medium truncate">גרעין הרעיון, תמה והצהרת כוונות</span>
+        </div>
+        <button onclick="openStationDetailSheet()" class="text-amber-400 text-[11px] underline shrink-0 font-semibold flex items-center gap-1">
+            <span>דרישות</span>
+            <i class="fa-solid fa-chevron-left text-[9px]"></i>
+        </button>
+    </div>
+
+    <!-- אזור ההודעות בצ'אט - נגלל במלואו מתחת לתיבת ההזנה בראש העמוד -->
+    <main id="chatMessages" class="flex-1 overflow-y-auto px-4 pt-3 pb-6 space-y-4 relative z-0" dir="rtl">
+        <!-- בועות השיחה יוכנסו כאן -->
+    </main>
+
+    <!-- מגירת 10 התחנות (Side Drawer) -->
+    <div id="stationsDrawer" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex justify-end" dir="rtl">
+        <div onclick="toggleStationsDrawer()" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+        
+        <div class="relative w-[85%] max-w-sm h-full bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-10 text-right">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clapperboard text-amber-500"></i>
+                    <h2 class="font-bold text-white text-base font-heading">10 התחנות בהפקה</h2>
+                </div>
+                <button onclick="toggleStationsDrawer()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-3 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-300 flex items-start gap-2">
+                <i class="fa-solid fa-graduation-cap text-sm mt-0.5 shrink-0"></i>
+                <span>מסלול הבגרות בקולנוע וטלוויזיה במשרד החינוך. בחר/י תחנה כדי לכוון את המנטור.</span>
+            </div>
+
+            <div id="drawerStationsList" class="flex-1 overflow-y-auto p-2 space-y-1.5">
+                <!-- יווצר דינמית -->
+            </div>
+
+            <div class="p-3 border-t border-slate-800 bg-slate-950 text-center">
+                <p class="text-[11px] text-slate-400">המנטור לא כותב עבורך – אלא שואל שאלה אחת בכל פעם</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל פירוט תחנה והנחיות משה"ח -->
+    <div id="stationModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" dir="rtl">
+        <div onclick="closeStationModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl z-10 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <div class="flex items-center gap-2">
+                    <span id="modalStationTag" class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold"></span>
+                    <h3 id="modalStationName" class="font-bold text-white text-sm"></h3>
+                </div>
+                <button onclick="closeStationModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="modalStationContent" class="text-xs space-y-2.5 leading-relaxed"></div>
+        </div>
+    </div>
+
+    <!-- מודל פרופיל תלמיד ויציאה -->
+    <div id="profileModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" dir="rtl">
+        <div onclick="closeProfileModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-xs bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-2xl z-10 text-center space-y-3">
+            <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl border border-amber-500/30">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+                <h3 id="profileModalName" class="font-bold text-white text-sm">יוצר/ת</h3>
+                <p id="profileModalGender" class="text-xs text-slate-400">מגמת קולנוע וטלוויזיה</p>
+            </div>
+            <div class="pt-2 border-t border-slate-800 flex gap-2 justify-center">
+                <button onclick="closeProfileModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs hover:bg-slate-700 font-medium transition">
+                    סגור
+                </button>
+                <button onclick="logoutStudent()" class="px-3 py-1.5 rounded-lg bg-rose-600/80 text-white text-xs hover:bg-rose-600 font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>החלף משתמש</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודאל אישור איפוס שיחה -->
+    <div id="resetConfirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" dir="rtl">
+        <div onclick="closeResetModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-xs bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-2xl z-10 text-center space-y-3">
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-base">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+            </div>
+            <h3 class="font-bold text-white text-sm">איפוס השיחה בתחנה הנוכחית?</h3>
+            <p class="text-xs text-slate-400">ההיסטוריה של התחנה תימחק ותוכלו להתחיל מחדש.</p>
+            <div class="flex gap-2 justify-center pt-1">
+                <button onclick="closeResetModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs hover:bg-slate-700 font-medium transition">
+                    ביטול
+                </button>
+                <button onclick="executeResetStation()" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs hover:bg-rose-500 font-bold transition">
+                    כן, אפס שיחה
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           הגדרת 10 התחנות בהפקת סרט - משרד החינוך (מעודכן לפי הסילבוס המדויק)
+           ========================================================================== */
+        const STATIONS = [
+            {
+                id: 1,
+                name: "רעיון ותחקיר",
+                short: "1. רעיון ותחקיר",
+                icon: "fa-lightbulb",
+                questionFocus: "מה הדבר האחד והבלתי-מתפשר שהדמות שלך חייבת להשיג עד סוף הסרט?",
+                description: "רעיון כללי, נקודת מבט אישית, ניסוח לוגליין מדויק, ביצוע תחקיר מקיף וכתיבת סינופסיס עלילתי.",
+                guidelines: [
+                    "רעיון ונקודת מבט: מה גורם לך לספר דווקא את הסיפור הזה כאן ועכשיו?",
+                    "לוגליין מהודק: מיהו הגיבור, מה היעד שלו, ומה המכשול הגדול ביותר שבדרכו?",
+                    "תחקיר: איסוף עדויות, פרטים אותנטיים מהמציאות והבנת העולם הדרמטי.",
+                    "סינופסיס: מהלך עלילתי ברור עם התחלה, אמצע, שיא וסוף."
+                ],
+                prompts: [
+                    "איך להפוך את הרעיון שלי ללוגליין ממוקד במשפט אחד?",
+                    "איך תחקיר על העולם האמיתי עוזר לדייק את הסינופסיס?",
+                    "מיהו הפרוטגוניסט ומה הקונפליקט המרכזי שלו?"
+                ]
+            },
+            {
+                id: 2,
+                name: "ז'אנר",
+                short: "2. ז'אנר",
+                icon: "fa-masks-theater",
+                questionFocus: "איזה ז'אנר מוביל בחרת לסרט, ואיזו מוסכמה ז'אנרית מוכרת תבחר לאמץ או לשבור?",
+                description: "בחירת הז'אנר הקולנועי (דרמה, קומדיה, מותחן, פילם נואר ועוד) והגדרת המאפיינים, הקונבנציות והציפיות של הצופה.",
+                guidelines: [
+                    "הגדרת הז'אנר: זיהוי הקונבנציות העיקריות (שפה חזותית, קצב, סוגי דמויות).",
+                    "ציפיות הקהל: מה הצופה מצפה להרגיש בז'אנר הזה (מתח, צחוק, חרדה, חמלה)?",
+                    "חדשנות אישית: באילו מוסכמות ז'אנר תשתמש ובאיזו תבחר להפתיע?"
+                ],
+                prompts: [
+                    "באיזה ז'אנר הסיפור שלי יעבוד הכי חזק ומדוע?",
+                    "איך משתמשים במוסכמות ז'אנר בלי ליפול לקלישאות?",
+                    "איך שפת המצלמה והתאורה משרתים את הז'אנר שבחרתי?"
+                ]
+            },
+            {
+                id: 3,
+                name: "דמויות וטריטמנט",
+                short: "3. דמויות וטריטמנט",
+                icon: "fa-user-group",
+                questionFocus: "מה הפער בין מה שהדמות הראשית רוצה (Want) לבין מה שהיא באמת צריכה (Need)?",
+                description: "אפיון דמויות עומק (מניעים, פחדים, יחסים), ניהול ישיבות צוות וכתיבת טריטמנט סצנה אחר סצנה.",
+                guidelines: [
+                    "אפיון דמויות רב-ממדי: רצון מודע, צורך רגשי, חולשה סודית וקשת שינוי.",
+                    "טריטמנט: פירוט מהלך כל סצנה (מי נמצא, מה הפעולה המרכזית ומה השינוי בסוף הסצנה).",
+                    "ישיבות צוות: סיעור מוחות משותף ותיאום ציפיות בין היוצרים."
+                ],
+                prompts: [
+                    "איך לבנות דמות עגולה עם פגמים שמעוררים הזדהות?",
+                    "מה קורה בכל סצנה בטריטמנט שגורם לה לקדם את העלילה?",
+                    "איך לנהל ישיבת צוות אפקטיבית על אפיון הדמויות?"
+                ]
+            },
+            {
+                id: 4,
+                name: "תסריט והשראות",
+                short: "4. תסריט והשראות",
+                icon: "fa-pen-fancy",
+                questionFocus: "איזה שוט מסרט השראה מוכר תרצה לצטט או לקבל ממנו השראה ישירה בסצנה המרכזית שלך?",
+                description: "כתיבת התסריט המלא בפורמט מקצועי, שימוש בסאבטקסט ודיאלוגים מדויקים, ואיסוף השראות ויזואליות וקולנועיות (Moodboard / References).",
+                guidelines: [
+                    "כתיבת תסריט מלא: פורמט תקני, כותרות סצנה, פעולות בזמן הווה ודיאלוגים מהודקים.",
+                    "Show Don't Tell: העברת הרגש של הדמויות דרך מעשים פיזיים ולא בהסברים במילים.",
+                    "איסוף השראות (Visual References): צילומי סטילס, קטעים מסרטים קיימים ופלטת צבעים רעיונית."
+                ],
+                prompts: [
+                    "איך להכניס סאבטקסט חזק לדיאלוג בין הדמויות?",
+                    "איך לבנות לוח השראות (Moodboard) ויזואלי לתסריט שלי?",
+                    "האם התיאורים בתסריט שלי מספרים פעולות שהמצלמה באמת יכולה לראות?"
+                ]
+            },
+            {
+                id: 5,
+                name: "סיור לוקיישנים",
+                short: "5. לוקיישנים",
+                icon: "fa-location-dot",
+                questionFocus: "איזה פרט ויזואלי או ארכיטקטוני בלוקיישן שמצאת משקף את המצב הנפשי הפנימי של הגיבור?",
+                description: "סיור מקדים בלוקיישנים (Recce), בדיקת התאמה אומנותית, בדיקות סאונד, חשמל, תאורה טבעית ואישורי צילום.",
+                guidelines: [
+                    "משמעות דרמטית של החלל: האם הלוקיישן משרת את התמה ואת בדידות/חוזק הדמות?",
+                    "בדיקות סאונד: האם יש רעשים חוזרים (מזגנים, כביש ראשי, שדה תעופה, צלצולים)?",
+                    "לוגיסטיקה ובטיחות: נקודות חשמל, כיווני שמש לאורך היום, נגישות ואישורי כניסה."
+                ],
+                prompts: [
+                    "מהן השאלות החשובות ביותר שחייבים לבדוק בסיור לוקיישן?",
+                    "איך לוודא שהחלל מתאים להצבת תאורה ומצלמה בלי לצופף את הצוות?",
+                    "איך הלוקיישן שבחרתי מעביר את התחושה של הסרט?"
+                ]
+            },
+            {
+                id: 6,
+                name: "פלור פלאן ושוטינג",
+                short: "6. פלור פלאן ושוטינג",
+                icon: "fa-compass-drafting",
+                questionFocus: "איך מיקמת את המצלמה ואת השחקנים על גבי הפלור פלאן כדי להבטיח שלא נשבר קו ה-180 מעלות?",
+                description: "תכנון תנועת המצלמה והשחקנים בחלל (Floor Plan), שרטוט זוויות ושרטוט שוטינג ליסט (Shooting Script) מדויק.",
+                guidelines: [
+                    "פלור פלאן (Floor Plan): שרטוט מבט-על של החלל, מיקום השחקנים, תנועתם ומיקומי המצלמה והפנסים.",
+                    "שוטינג ליסט: גודל שוט, זווית צילום, סוג עדשה, תנועת מצלמה והערות סאונד/משחק.",
+                    "שמירה על חוק 180 המעלות: שמירה על כיווני מבט עקביים בין הדמויות."
+                ],
+                prompts: [
+                    "איך משרטטים פלור פלאן שעוזר לשחקנים ולצלם להבין את החלל?",
+                    "איך לתכנן שוטינג ליסט הגיוני שלא יעמיס על יום הצילום?",
+                    "מתי שווה להשתמש בתנועת מצלמה (Dolly/Pan) ומתי בשוט סטטי?"
+                ]
+            },
+            {
+                id: 7,
+                name: "ליהוק וחזרות",
+                short: "7. ליהוק וחזרות",
+                icon: "fa-users-viewfinder",
+                questionFocus: "איזו הנחיית בימוי מבוססת-פעולה תיתן לשחקן בחזרה במקום להגיד לו 'תהיה כועס'?",
+                description: "איתור וליהוק שחקנים (אודישנים), בדיקת התאמה וכימיה בין הדמויות, וניהול חזרות בימוי מקדימות.",
+                guidelines: [
+                    "אודישנים וכימיה: בדיקת היכולת של השחקן להקשיב ולהגיב לשותפו לסצנה.",
+                    "עבודת במאי מול שחקן: שימוש בפעלים אקטיביים ומטרות קונקרטיות במקום שמות תואר רגשיים.",
+                    "חזרות מקדימות: תרגום הסאבטקסט של התסריט לתנועה ולפעולה פיזית בחלל."
+                ],
+                prompts: [
+                    "איך לערוך אודישן שיוציא מהשחקן משחק אמין ולא תיאטרלי?",
+                    "מהן הנחיות בימוי שמתמקדות בפעולה ולא בתוצאה רגשית?",
+                    "איך לבנות אמון בין הבמאי לשחקנים לפני יום הצילומים הראשון?"
+                ]
+            },
+            {
+                id: 8,
+                name: "ברייקדאון וטסטינג",
+                short: "8. ברייקדאון וטסטינג",
+                icon: "fa-list-check",
+                questionFocus: "איזה טסט טכני (בדיקת תאורה, מיקרופון או עדשה) עשיתם כדי לוודא שאין הפתעות ברגע האמת?",
+                description: "פירוק התסריט לצרכי הפקה (Breakdown: אביזרים, הלבשה, ארט, איפור, אישור לוקיישן) וביצוע טסטים טכניים מקדימים של מצלמה וסאונד.",
+                guidelines: [
+                    "דפי פירוק (Script Breakdown): סימון ורישום של כל אביזר, פריט לבוש, אפקט או שחקן בכל סצנה.",
+                    "טסטינג למצלמה ולעדשות: בדיקת עומק שדה, תאורה בחשיכה ותנועת מייצב/חצובה.",
+                    "טסטינג לסאונד: בדיקת מיקרופון בום מול משדרים, הימנעות מחיכוך בבגדים ורמות עוצמת הקלטה (Levels)."
+                ],
+                prompts: [
+                    "איך מכינים דף ברייקדאון מקצועי לפי קטגוריות הפקה?",
+                    "מהם הטסטים הטכניים החשובים ביותר שחייבים לעשות שבוע לפני הצילום?",
+                    "איך לוודא שכל פריט ארט והלבשה משרת את אפיון הדמות?"
+                ]
+            },
+            {
+                id: 9,
+                name: "ימי צילום",
+                short: "9. ימי צילום",
+                icon: "fa-video",
+                questionFocus: "האם הקפדתם להקליט דקה מלאה של Room Tone (שקט של החלל) בסיום כל סצנה לצורכי עריכה?",
+                description: "ההוצאה לפועל בשטח: ניהול יום צילום, עמידה בלוח זמנים (Call Sheet), עבודת צוות, הקלטת סאונד נקייה ופתרון בעיות.",
+                guidelines: [
+                    "סאונד בעדיפות עליונה: הקפדה על מיקום בום נכון, בדיקת רעשי רקע והקלטת רום-טון (Room Tone).",
+                    "ניהול שטח ולוח זמנים: עבודה לפי Call Sheet וסדר צילום הגיוני לפי תאורה ולוקיישן.",
+                    "כיסוי מצלמה (Coverage): וידוא שיש מספיק שוטים (רחב, מדיום, קלוז-אפים ואינסרטים) כדי לאפשר עריכה זורמת."
+                ],
+                prompts: [
+                    "איך להגיב כשמתרחש עיכוב זמנים בלתי צפוי במהלך יום הצילומים?",
+                    "למה הקלטת דקת שקט (Room Tone) היא קריטית לפוסט פרודקשן?",
+                    "איך שומרים על אווירת עבודה שקטה וממוקדת בין חברי הצוות על הסט?"
+                ]
+            },
+            {
+                id: 10,
+                name: "עריכת אופליין ואונליין",
+                short: "10. פוסט פרודקשן",
+                icon: "fa-sliders",
+                questionFocus: "איזה שוט יפהפה שתכננתם תהיה מוכן לחתוך החוצה (Kill your darlings) כי הוא פוגע בקצב העלילה?",
+                description: "צפייה בחומרי הגלם ומיון, עריכת אופליין (מבנה, קצב וסיפור), צילומי השלמה במידת הצורך, עריכת אונליין, פסקול וצבע.",
+                guidelines: [
+                    "עריכת אופליין: גיבוש הסיפור, חיתוך על תנועה, קצב פנימי של סצנה והידוק דרמטי.",
+                    "צילומי השלמה (Pickups): איתור פערי מידע או שוטי מעבר נדרשים והשלמתם המהירה.",
+                    "עריכת אונליין וסאונד: תיקוני צבע (Color Grading), ניקוי דיאלוגים, עריכת אפקטים (Foley) ומוזיקה."
+                ],
+                prompts: [
+                    "איך מזהים איפה הסרט 'נמרח' בגרסת העריכה הראשונה (Rough Cut)?",
+                    "איך עריכת סאונד נכונה יכולה לחבר שוטים שנראו לא מתאימים בעין?",
+                    "איך לדעת מתי הסרט שלם ומוכן להגשה לבגרות?"
+                ]
+            }
+        ];
+
+        /* ==========================================================================
+           מצב האפליקציה (State)
+           ========================================================================== */
+        let currentStationId = 1;
+        let isGenerating = false;
+        const conversations = {};
+
+        // משתנה לאחסון תמונה שהמשתמש מצרף
+        let attachedImage = null; // { base64: string, mimeType: string, name: string }
+
+        // נתוני התלמיד
+        let studentProfile = {
+            name: "",
+            gender: "male", // 'male' או 'female'
+            isLoggedIn: false
+        };
+
+        function initDefaultConversations() {
+            STATIONS.forEach(s => {
+                if (!conversations[s.id] || conversations[s.id].length === 0) {
+                    const welcomeName = studentProfile.name ? ` ${studentProfile.name}` : "";
+                    const welcomeGreeting = studentProfile.gender === 'female' 
+                        ? `שלום יוצרת יקרה${welcomeName}! 🎬 ברוכה הבאה ל**${s.name}** (תחנה מס' ${s.id}).`
+                        : `שלום יוצר יקר${welcomeName}! 🎬 ברוך הבא ל**${s.name}** (תחנה מס' ${s.id}).`;
+
+                    conversations[s.id] = [
+                        {
+                            role: 'assistant',
+                            text: `${welcomeGreeting}\n\nבוא נתחיל בשאלה הראשונה והמרכזית:\n**${s.questionFocus}**\n\nשתף/י אותי במחשבות שלך.`
+                        }
+                    ];
+                }
+            });
+        }
+        initDefaultConversations();
+
+        let currentUser = null;
+        let saveStationTimeout = null;
+    </script>
+
+    <!-- שמירה בענן -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cinema-10-stations';
+        
+        let firebaseConfig = null;
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch (e) {
+                console.error("Firebase config parse error", e);
+            }
+        }
+
+        if (firebaseConfig) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+                window._cloudDb = db;
+                window._cloudAppId = appId;
+                window._cloudAuth = auth;
+
+                // ניסיון התחברות עם חשבון גוגל
+                window.loginWithGoogleFirebase = async function() {
+                    try {
+                        const provider = new GoogleAuthProvider();
+                        await signInWithPopup(auth, provider);
+                    } catch (popupErr) {
+                        console.warn("Popup sign-in not available, falling back to authenticated state:", popupErr);
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+                };
+
+                async function initAuth() {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (err) {
+                        console.warn("Auth token fallback to anonymous:", err);
+                        await signInAnonymously(auth);
+                    }
+                }
+
+                initAuth();
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        window._currentUserId = user.uid;
+                        await loadAllConversationsFromCloud(db, appId, user.uid);
+                    }
+                });
+            } catch (err) {
+                console.warn("Cloud storage init error:", err);
+            }
+        }
+
+        async function loadAllConversationsFromCloud(db, appId, userId) {
+            const syncStatusEl = document.getElementById('cloudSyncIndicator');
+            if (syncStatusEl) {
+                syncStatusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[9px]"></i><span>טוען...</span>`;
+                syncStatusEl.className = "text-[10px] text-amber-400 flex items-center gap-1";
+            }
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'cinema_history', 'all_stations');
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.studentProfile) {
+                        studentProfile = { ...studentProfile, ...data.studentProfile };
+                        applyStudentProfileUI();
+                        hideLoginScreen();
+                    }
+                    if (data && data.conversationsJson) {
+                        const parsed = JSON.parse(data.conversationsJson);
+                        Object.keys(parsed).forEach(stationId => {
+                            if (Array.isArray(parsed[stationId]) && parsed[stationId].length > 0) {
+                                conversations[stationId] = parsed[stationId];
+                            }
+                        });
+                        renderChat();
+                    }
+                }
+
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[9px]"></i><span>מסונכרן</span>`;
+                    syncStatusEl.className = "text-[10px] text-emerald-400 flex items-center gap-1";
+                }
+            } catch (e) {
+                console.error("Error loading chat history from cloud:", e);
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-[9px]"></i><span>פעיל</span>`;
+                    syncStatusEl.className = "text-[10px] text-slate-400 flex items-center gap-1";
+                }
+            }
+        }
+
+        window.saveCurrentConversationsToCloud = async function() {
+            const syncStatusEl = document.getElementById('cloudSyncIndicator');
+            if (!window._cloudDb || !window._currentUserId) return;
+
+            if (syncStatusEl) {
+                syncStatusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[9px]"></i><span>שומר...</span>`;
+                syncStatusEl.className = "text-[10px] text-amber-400 flex items-center gap-1";
+            }
+
+            try {
+                const docRef = doc(window._cloudDb, 'artifacts', window._cloudAppId, 'users', window._currentUserId, 'cinema_history', 'all_stations');
+                await setDoc(docRef, {
+                    studentProfile: studentProfile,
+                    conversationsJson: JSON.stringify(conversations),
+                    lastUpdated: new Date().toISOString()
+                }, { merge: true });
+
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[9px]"></i><span>נשמר</span>`;
+                    syncStatusEl.className = "text-[10px] text-emerald-400 flex items-center gap-1";
+                }
+            } catch (err) {
+                console.error("Failed to save to cloud:", err);
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[9px]"></i><span>שגיאת שמירה</span>`;
+                    syncStatusEl.className = "text-[10px] text-rose-400 flex items-center gap-1";
+                }
+            }
+        };
+    </script>
+
+    <script>
+        /* ==========================================================================
+           ניהול התחברות ופרופיל תלמיד
+           ========================================================================== */
+        let googleBtnClickCount = 0;
+        let googleBtnClickTimer = null;
+
+        function handleGoogleButtonClick(event) {
+            if (event) event.preventDefault();
+
+            googleBtnClickCount++;
+
+            // איפוס מונה הלחיצות אם חלפו יותר מ-2.5 שניות בין לחיצה ללחיצה
+            clearTimeout(googleBtnClickTimer);
+            googleBtnClickTimer = setTimeout(() => {
+                googleBtnClickCount = 0;
+            }, 2500);
+
+            // בדיקת 5 לחיצות למעקף מהיר
+            if (googleBtnClickCount >= 5) {
+                bypassLoginDirectly();
+                return;
+            }
+
+            // לחיצה רגילה יחידה: הגשת הטופס והתחברות
+            if (googleBtnClickCount === 1) {
+                const nameInput = document.getElementById('studentNameInput');
+                if (!nameInput.value.trim()) {
+                    nameInput.focus();
+                    nameInput.placeholder = "נא להזין שם, או להמשיך להקליק 5 פעמים לכניסה ישירה...";
+                } else {
+                    handleStudentLogin();
+                }
+            }
+        }
+
+        // מעקף התחברות מהיר (Bypass) בלחיצה 5 פעמים
+        function bypassLoginDirectly() {
+            googleBtnClickCount = 0;
+            clearTimeout(googleBtnClickTimer);
+
+            const nameInput = document.getElementById('studentNameInput');
+            const enteredName = nameInput ? nameInput.value.trim() : "";
+            const genderRadio = document.querySelector('input[name="studentGender"]:checked');
+            const gender = genderRadio ? genderRadio.value : 'male';
+
+            studentProfile.name = enteredName || "יוצר אורח";
+            studentProfile.gender = gender;
+            studentProfile.isLoggedIn = true;
+
+            applyStudentProfileUI();
+            hideLoginScreen();
+            updateFirstMessagesForProfile();
+        }
+
+        async function handleStudentLogin(e) {
+            if (e) e.preventDefault();
+            const nameInput = document.getElementById('studentNameInput');
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            const genderRadio = document.querySelector('input[name="studentGender"]:checked');
+            const gender = genderRadio ? genderRadio.value : 'male';
+
+            studentProfile.name = name;
+            studentProfile.gender = gender;
+            studentProfile.isLoggedIn = true;
+
+            // הפעלת התחברות Google במידת האפשר
+            if (window.loginWithGoogleFirebase) {
+                try {
+                    await window.loginWithGoogleFirebase();
+                } catch (err) {
+                    console.log("Proceeding with profile state:", err);
+                }
+            }
+
+            applyStudentProfileUI();
+            hideLoginScreen();
+            updateFirstMessagesForProfile();
+            triggerAutoSave();
+        }
+
+        function applyStudentProfileUI() {
+            if (!studentProfile.name) return;
+            const nameEl = document.getElementById('headerUserName');
+            if (nameEl) nameEl.textContent = studentProfile.name;
+
+            const modalNameEl = document.getElementById('profileModalName');
+            if (modalNameEl) modalNameEl.textContent = studentProfile.name;
+
+            const modalGenderEl = document.getElementById('profileModalGender');
+            if (modalGenderEl) {
+                modalGenderEl.textContent = studentProfile.gender === 'female' ? "יוצרת קולנוע (נקבה)" : "יוצר קולנוע (זכר)";
+            }
+        }
+
+        function updateFirstMessagesForProfile() {
+            STATIONS.forEach(s => {
+                if (conversations[s.id] && conversations[s.id].length === 1 && conversations[s.id][0].role === 'assistant') {
+                    const welcomeName = studentProfile.name ? ` ${studentProfile.name}` : "";
+                    const welcomeGreeting = studentProfile.gender === 'female' 
+                        ? `שלום יוצרת יקרה${welcomeName}! 🎬 ברוכה הבאה ל**${s.name}** (תחנה מס' ${s.id}).`
+                        : `שלום יוצר יקר${welcomeName}! 🎬 ברוך הבא ל**${s.name}** (תחנה מס' ${s.id}).`;
+
+                    conversations[s.id][0].text = `${welcomeGreeting}\n\nבוא נתחיל בשאלה הראשונה והמרכזית:\n**${s.questionFocus}**\n\nשתף/י אותי במחשבות שלך.`;
+                }
+            });
+            renderChat();
+        }
+
+        function hideLoginScreen() {
+            const login = document.getElementById('loginScreen');
+            if (login) login.classList.add('hidden');
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function logoutStudent() {
+            closeProfileModal();
+            studentProfile.isLoggedIn = false;
+            document.getElementById('studentNameInput').value = studentProfile.name || '';
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        /* ==========================================================================
+           רינדור ממשק
+           ========================================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            renderQuickPills();
+            renderDrawerStations();
+            updateStationUI(currentStationId);
+            renderChat();
+        });
+
+        function renderQuickPills() {
+            const container = document.getElementById('quickStationPills');
+            container.innerHTML = STATIONS.map(s => `
+                <button onclick="changeStation(${s.id})" id="pill-${s.id}" 
+                    class="px-2.5 py-1 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${
+                        s.id === currentStationId 
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-sm' 
+                        : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:border-slate-600 hover:text-slate-200'
+                    }">
+                    <i class="fa-solid ${s.icon} text-[10px]"></i>
+                    <span>${s.short}</span>
+                </button>
+            `).join('');
+        }
+
+        function renderDrawerStations() {
+            const container = document.getElementById('drawerStationsList');
+            container.innerHTML = STATIONS.map(s => `
+                <div onclick="changeStation(${s.id}); toggleStationsDrawer();" 
+                    class="p-2.5 rounded-xl cursor-pointer transition border flex items-center gap-3 ${
+                        s.id === currentStationId 
+                        ? 'bg-amber-500/15 border-amber-500/40 text-amber-300' 
+                        : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    }">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${
+                        s.id === currentStationId ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-700 text-slate-300'
+                    }">
+                        ${s.id}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold truncate">${s.name}</div>
+                        <div class="text-[10px] text-slate-400 truncate">${s.description}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-[10px] text-slate-500"></i>
+                </div>
+            `).join('');
+        }
+
+        function changeStation(id) {
+            currentStationId = id;
+            updateStationUI(id);
+            renderQuickPills();
+            renderDrawerStations();
+            renderChat();
+
+            const activePill = document.getElementById(`pill-${id}`);
+            if (activePill) {
+                activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        function updateStationUI(id) {
+            const station = STATIONS.find(s => s.id === id);
+            if (!station) return;
+
+            document.getElementById('headerSubtitle').textContent = `תחנה ${station.id}: ${station.name}`;
+            document.getElementById('bannerStationNum').textContent = `תחנה ${station.id}`;
+            document.getElementById('bannerStationTitle').textContent = station.name;
+
+            const chipsContainer = document.getElementById('suggestionChips');
+            chipsContainer.innerHTML = station.prompts.map(p => `
+                <button onclick="useQuickPrompt('${escapeHtml(p)}')" 
+                    class="text-[11px] bg-slate-900 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition flex items-center gap-1 active:scale-95">
+                    <i class="fa-regular fa-comment-dots text-[10px] text-amber-400"></i>
+                    <span>${p}</span>
+                </button>
+            `).join('');
+        }
+
+        function renderChat() {
+            const container = document.getElementById('chatMessages');
+            const history = conversations[currentStationId] || [];
+
+            container.innerHTML = history.map((msg) => {
+                const isAssistant = msg.role === 'assistant';
+                const hasImage = Boolean(msg.imageData);
+
+                return `
+                    <div class="flex items-start gap-2.5 ${isAssistant ? '' : 'flex-row-reverse'} w-full text-right" dir="rtl">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs shadow-md mt-1 ${
+                            isAssistant 
+                            ? 'bg-gradient-to-tr from-amber-600 to-amber-400 text-slate-950 font-bold' 
+                            : 'bg-blue-600 text-white'
+                        }">
+                            <i class="fa-solid ${isAssistant ? 'fa-clapperboard' : 'fa-user'}"></i>
+                        </div>
+                        <div class="w-fit max-w-[88%] sm:max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap select-text text-right ${
+                            isAssistant 
+                            ? 'bg-slate-800/95 text-slate-100 border border-slate-700/70 chat-bubble-ai' 
+                            : 'bg-amber-500 text-slate-950 font-medium chat-bubble-user shadow-amber-500/10'
+                        }" dir="rtl">
+                            ${hasImage ? `
+                                <div class="mb-2 rounded-xl overflow-hidden border border-black/20 shadow-md">
+                                    <img src="data:${msg.imageData.mimeType};base64,${msg.imageData.base64}" alt="רפרנס ויזואלי" class="max-h-56 w-auto object-cover rounded-lg cursor-pointer" onclick="window.open(this.src, '_blank')">
+                                </div>
+                            ` : ''}
+                            ${formatMarkdown(msg.text)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            scrollToBottom();
+        }
+
+        /* ==========================================================================
+           טיפול בהעלאת תמונות (Moodboard / References / Floor Plans)
+           ========================================================================== */
+        function handleImageSelection(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const base64Data = dataUrl.split(',')[1];
+                const mimeType = file.type || 'image/jpeg';
+
+                attachedImage = {
+                    base64: base64Data,
+                    mimeType: mimeType,
+                    name: file.name
+                };
+
+                const previewContainer = document.getElementById('imagePreviewContainer');
+                const previewThumb = document.getElementById('imagePreviewThumb');
+                const previewName = document.getElementById('imagePreviewName');
+
+                if (previewThumb) previewThumb.src = dataUrl;
+                if (previewName) previewName.textContent = file.name;
+                if (previewContainer) previewContainer.classList.remove('hidden');
+
+                const input = document.getElementById('userInput');
+                if (!input.value) {
+                    input.placeholder = "מה התמונה מציגה? (למשל: לוח השראה, פלור פלאן, שוט מרפרנס...)";
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedImage() {
+            attachedImage = null;
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            if (previewContainer) previewContainer.classList.add('hidden');
+            const fileInput = document.getElementById('imageFileInput');
+            if (fileInput) fileInput.value = '';
+            const input = document.getElementById('userInput');
+            if (input) input.placeholder = "פרט/י כאן על הרעיון, הדמות, הדילמה או הסצנה...";
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
+
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            const maxHeight = Math.floor(window.innerHeight * 0.45);
+            const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+            textarea.style.height = (newHeight < 38 ? 38 : newHeight) + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                handleUserSubmit(e);
+            }
+        }
+
+        function useQuickPrompt(promptText) {
+            const input = document.getElementById('userInput');
+            input.value = promptText;
+            autoResizeTextarea(input);
+            input.focus();
+        }
+
+        /* ==========================================================================
+           הפעלת כפתורי הפעולה האוטומטיים
+           ========================================================================== */
+        function triggerQuickAction(actionType) {
+            const currentStation = STATIONS.find(s => s.id === currentStationId);
+            const input = document.getElementById('userInput');
+
+            if (actionType === 'options') {
+                input.value = `הצע לי 3 כיוונים/אפשרויות שונות לבחירה עבור ${currentStation.name}, ואחר כך שאל אותי באיזו אפשרות אני בוחר ומדוע.`;
+            } else if (actionType === 'references') {
+                input.value = `אילו רפרנסים קולנועיים מוכרים (סרטים, במאים, סצנות או סגנונות) רלוונטיים עבור ${currentStation.name} שאני יכול להסתמך עליהם ולקבל מהם השראה?`;
+            } else if (actionType === 'summary') {
+                input.value = `תציע לי סיכום תמציתי ומסודר של כל עיקרי התכנון וההחלטות שגיבשתי עד כה בתחנה זו (${currentStation.name}), ולאחר מכן שאל אותי מה השלב הבא.`;
+            }
+
+            autoResizeTextarea(input);
+            handleUserSubmit();
+        }
+
+        /* ==========================================================================
+           שליחת שאלה וקריאה ל-Gemini API (שאלה אחת בלבד בכל פעם)
+           ========================================================================== */
+        async function handleUserSubmit(e) {
+            if (e) e.preventDefault();
+            if (isGenerating) return;
+
+            const input = document.getElementById('userInput');
+            let userText = input.value.trim();
+            const currentImg = attachedImage;
+
+            if (!userText && !currentImg) return;
+
+            if (!userText && currentImg) {
+                userText = "העליתי תמונה/רפרנס לדיון בתחנה זו. נתח/י את הבחירות הוויזואליות או התכנוניות שבה ביחס לתחנה ושאל/י אותי שאלת מיקוד.";
+            }
+
+            const userMsg = {
+                role: 'user',
+                text: userText
+            };
+
+            if (currentImg) {
+                userMsg.imageData = {
+                    base64: currentImg.base64,
+                    mimeType: currentImg.mimeType
+                };
+            }
+
+            conversations[currentStationId].push(userMsg);
+
+            input.value = '';
+            input.style.height = 'auto';
+            clearSelectedImage();
+
+            renderChat();
+            triggerAutoSave();
+
+            showTypingIndicator();
+            isGenerating = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                const aiResponse = await callCinemaMentorAPI(userText, currentImg);
+                removeTypingIndicator();
+                
+                conversations[currentStationId].push({
+                    role: 'assistant',
+                    text: aiResponse
+                });
+                renderChat();
+                triggerAutoSave();
+            } catch (err) {
+                console.warn("API fallback to local smart socratic engine:", err.message);
+                removeTypingIndicator();
+                
+                const fallbackReply = generateSmartSocraticResponse(userText);
+                conversations[currentStationId].push({
+                    role: 'assistant',
+                    text: fallbackReply
+                });
+                renderChat();
+                triggerAutoSave();
+            } finally {
+                removeTypingIndicator();
+                isGenerating = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        function triggerAutoSave() {
+            if (saveStationTimeout) clearTimeout(saveStationTimeout);
+            saveStationTimeout = setTimeout(() => {
+                if (typeof window.saveCurrentConversationsToCloud === 'function') {
+                    window.saveCurrentConversationsToCloud();
+                }
+            }, 600);
+        }
+
+        function showTypingIndicator() {
+            removeTypingIndicator();
+            const container = document.getElementById('chatMessages');
+            const typingHtml = `
+                <div id="typingIndicator" class="flex items-start gap-2.5" dir="rtl">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-slate-950 font-bold flex items-center justify-center shrink-0 text-xs">
+                        <i class="fa-solid fa-clapperboard"></i>
+                    </div>
+                    <div class="bg-slate-800/90 text-slate-400 rounded-2xl px-4 py-2 text-xs flex items-center gap-1.5 shadow-sm border border-slate-700/60 chat-bubble-ai">
+                        <span class="typing-dot w-1.5 h-1.5 bg-amber-400 rounded-full inline-block"></span>
+                        <span class="typing-dot w-1.5 h-1.5 bg-amber-400 rounded-full inline-block"></span>
+                        <span class="typing-dot w-1.5 h-1.5 bg-amber-400 rounded-full inline-block"></span>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', typingHtml);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        async function callCinemaMentorAPI(userPrompt, imageAttachment = null) {
+            const currentStation = STATIONS.find(s => s.id === currentStationId);
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const genderPrompt = studentProfile.gender === 'female' 
+                ? "התלמידה היא יוצרת (נקבה). פנה אליה בלשון נקבה (את, חשבי, שתפי, צפי, הגדירי וכד')."
+                : "התלמיד הוא יוצר (זכר). פנה אליו בלשון זכר (אתה, חשוב, שתף, צפה, הגדר וכד').";
+
+            const namePrompt = studentProfile.name ? `שם התלמיד/ה: ${studentProfile.name}.` : "";
+
+            const systemInstruction = `
+אתה "המנטור הקולנועי" - מורה ומנחה מומחה לבגרות בקולנוע וטלוויזיה במשרד החינוך הטכנולוגי בישראל.
+${namePrompt}
+${genderPrompt}
+התחנה הנוכחית של התלמיד היא תחנה ${currentStation.id}: ${currentStation.name}.
+
+חוקי שיחה בלתי מתפשרים (הנחיה סוקרטית מתקדמת):
+1. כאשר התלמיד מבקש:
+   - "הצע לי אפשרויות לבחירה": הצג לו 3 כיוונים אומנותיים/דרמטיים שונים וקצרים, ובסיום שאל אותו באיזה כיוון הוא בוחר ולמה.
+   - "רפרנסים להסתמך עליהם": ציין 2-3 סרטים, יוצרים או שוטים ידועים מהקולנוע העולמי או הישראלי שמתאימים לנושא, והסבר בקצרה מה ללמוד מהם.
+   - "סיכום עיקרי התכנון": סכם בנקודות תמציתיות ומחמיאות את מה שהתלמיד הגדיר בשיחה הנוכחית על פי הדרישות לבגרות, ואז שאל שאלה אחת על הדבר הבא שדורש הכרעה.
+2. בכל מקרה אחר: חוק הברזל הוא לשאול **שאלה אחת בלבד בכל פעם!** בשום אופן אל תציג רשימה או מקבץ של שאלות.
+3. לעולם אל תכתוב את התסריט או את תיק ההפקה במקום התלמיד.
+4. **ניתוח תמונות ורפרנסים (Vision Analysis):**
+   - כאשר מצורפת תמונה:
+     * זהה במדויק את המרכיבים הקולנועיים בתמונה ביחס לתחנה ${currentStation.id} (${currentStation.name}).
+     * התייחס בקצרה לאלמנט הבולט ביותר, ושאל שאלת מיקוד עמוקה אחת לגביו.
+5. אורך התגובה: בהיר, מנוקד וקריא בטלפון נייד.
+`;
+
+            const history = (conversations[currentStationId] || []).slice(-4);
+            const contents = history.map((item, index) => {
+                const parts = [];
+                // אם להודעה זו של המשתמש הייתה תמונה מצורפת
+                if (item.imageData) {
+                    parts.push({
+                        inlineData: {
+                            mimeType: item.imageData.mimeType,
+                            data: item.imageData.base64
+                        }
+                    });
+                }
+                parts.push({ text: item.text });
+
+                return {
+                    role: item.role === 'assistant' ? 'model' : 'user',
+                    parts: parts
+                };
+            });
+
+            const payload = {
+                contents: contents,
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                },
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1200
+                }
+            };
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`API error code ${response.status}`);
+                }
+
+                const data = await response.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text && text.trim().length > 0) {
+                    return text.trim();
+                }
+                throw new Error("No text candidate");
+            } catch (error) {
+                clearTimeout(timeoutId);
+                throw error;
+            }
+        }
+
+        function generateSmartSocraticResponse(userText) {
+            // טיפול מקומי לפעולות המהירות במידת נפילת רשת
+            if (userText.includes("הצע לי 3 כיוונים") || userText.includes("כמה אפשרויות לבחירה")) {
+                return `הנה 3 כיוונים קולנועיים שונים שתוכל לבחור מתוכם:\n\n1. **הכיוון הריאליסטי-מחוספס:** מצלמת כתף, תאורה טבעית זמינה, דגש על שקט ואותנטיות תיעודית.\n2. **הכיוון המסוגנן-פסיכולוגי:** זוויות צילום חדות, תאורת ניגודית (High Contrast) ושימוש בסמלים וויזואליים.\n3. **הכיוון המאופק (Minimalist):** פריימים רחבים סטטיים וממושכים, שמכריחים את הצופה לבחון את שפת הגוף של הדמויות.\n\n**באיזה משלושת הכיוונים האלה אתה מרגיש שהסיפור שלך יקבל את העוצמה המרבית, ומדוע?**`;
+            }
+
+            if (userText.includes("רפרנסים") || userText.includes("להסתמך עליהם")) {
+                return `הנה רפרנסים קולנועיים מצוינים שכדאי לכם לראות וללמוד מהם בשלב זה:\n\n• **'אפס ביחסי אנוש' (טליה לביא):** מופת לבניית דמויות בעלות רצון קונקרטי והתמודדות עם חללים מונוטוניים.\n• **'הרוכב' / 'חולית' (דני וילנב / קלואי ז'או):** שיעור מעשי בניצול שעת הקסם (Magic Hour) והפיכת הנוף לדמות בסיפור.\n• **'וויפלאש' (דמיאן שאזל):** דוגמה מבריקה לעריכת אופליין קצבית שמשתמשת בקלוז-אפים תזזיתיים ליצירת מתח.\n\n**איזה אלמנט מרכזי מאחד הסרטים האלה היית רוצה ליישם בסרט שלך?**`;
+            }
+
+            if (userText.includes("סיכום") || userText.includes("עיקרי התכנון")) {
+                return `הנה סיכום ההחלטות העיקריות שגיבשת עד כה:\n\n✓ **נושא ומוקד:** הגדרת את המטרה המרכזית ואת הציר הרגשי שמוביל את השלב הזה.\n✓ **שפה קולנועית:** בחרת קו סגנוני שמתאים לז'אנר ולמגבלות ההפקה של סרט גמר.\n✓ **מוכנות לשטח:** ישנו כיוון ברור לפתרון האתגר המרכזי שעלה בשיחה.\n\n**מהי הדילמה הבאה שהכי דחוף לך להכריע בה לפני שנעבור לתחנה הבאה?**`;
+            }
+
+            const bank = {
+                1: [
+                    `נקודה מעניינת. כדי לחדד את גרעין הסיפור והתחקיר:\n\n**מה הדבר האחד והבלתי-מתפשר שהדמות שלך חייבת להשיג עד סוף הסרט?**`,
+                    `הכיוון מתחיל להתבהר. בוא נבחן את הקונפליקט המרכזי:\n\n**מה יקרה לדמות אם היא תיכשל במשימה שלה? מה המחיר האישי הכבד ביותר שהיא תשלם?**`,
+                    `תחקיר טוב חושף פרטים אותנטיים:\n\n**איזה פרט לא צפוי על העולם הזה גילית בתחקיר, שמבטיח שהסיפור שלך לא יישמע כמו קלישאה?**`
+                ],
+                2: [
+                    `ז'אנר מגדיר את חוקי המשחק והציפיות של הצופה:\n\n**איזה ז'אנר מוביל בחרת לסרט, ואיזו מוסכמה ז'אנרית מוכרת תבחר לאמץ או דווקא לשבור?**`,
+                    `בוא נחשוב על החוויה הרגשית של הקהל:\n\n**איזו תחושה פיזית או רגשית (מתח, חרדה, צחוק או חמלה) הז'אנר הזה אמור לעורר בצופה ברגע השיא?**`,
+                    `שפת הקולנוע משרתת את הז'אנר:\n\n**איזה מאפיין ויזואלי (תאורה, קצב עריכה או זוויות צילום) יבהיר לצופה מיד באיזה ז'אנר מדובר?**`
+                ],
+                3: [
+                    `דמויות מורכבות נבנות דרך קונפליקט פנימי עמוק:\n\n**מה הפער בין מה שהדמות הראשית רוצה (Want) לבין מה שהיא באמת צריכה (Need) כדי להשתנות?**`,
+                    `בוא נבחן את מבנה הטריטמנט שלך:\n\n**בסיום המערכה הראשונה – איזה אירוע אל-חזור מכריח את הדמות לצאת למסע שממנו לא תוכל לחזור לשגרה?**`,
+                    `ישיבות צוות עוסקות בדיוק התפקידים:\n\n**האם כל חברי הצוות רואים את המניע הסודי של הדמות באותו אופן בדיוק?**`
+                ],
+                4: [
+                    `תסריט טוב עובד לפי הכלל **Show, Don't Tell**:\n\n**איזו פעולה פיזית שהדמות עושה בסצנה תגלה לצופה מה היא מרגישה, מבלי שתאמר מילה אחת של דיאלוג?**`,
+                    `דיאלוגים חזקים נשענים על סאבטקסט:\n\n**מה הדמות שלך באמת רוצה להשיג מהאדם שעומד מולה ברגע זה, מתחת למילים הפשוטות שהיא אומרת?**`,
+                    `השראות ויזואליות עוזרות לגבש שפה קולנועית:\n\n**איזה שוט מסרט השראה מוכר תרצה לצטט או לקבל ממנו השראה ישירה בסצנה המרכזית שלך?**`
+                ],
+                5: [
+                    `הלוקיישן הוא דמות נוספת בסרט:\n\n**איזה פרט ויזואלי או ארכיטקטוני בלוקיישן שמצאתם משקף בצורה המדויקת ביותר את הבדידות או החוזק של הגיבור?**`,
+                    `סיור לוקיישן נועד למנוע אסונות סאונד:\n\n**האם עמדתם בחלל הזה בשקט מוחלט במשך 2 דקות מלאות כדי לבדוק רעשים קבועים (כביש, מקרר, מזגן או צלצולי פעמון)?**`,
+                    `תאורה טבעית משתנה לאורך היום:\n\n**באיזו שעה ביום האור בלוקיישן הזה מחמיא ומשרת בצורה הטובה ביותר את האווירה של הסצנה?**`
+                ],
+                6: [
+                    `פלור פלאן מתרגם את התסריט לחלל תלת-ממדי:\n\n**איך מיקמת את המצלמה ואת השחקנים על גבי הפלור פלאן כדי להבטיח שלא נשבר קו ה-180 מעלות?**`,
+                    `שוטינג ליסט מנומק מונע צילומי סרק:\n\n**מתוך כל השוטים שתכננת לסצנה הזו – מהו ה-Money Shot שאסור לך לוותר עליו בשום מקרה?**`,
+                    `תנועת מצלמה יוצרת משמעות:\n\n**למה בחרת שהמצלמה תנוע בשוט הזה ולא תישאר מקובעת ויציבה על חצובה?**`
+                ],
+                7: [
+                    `בליהוק מחפשים אמת וכימיה ולא רק מראה חיצוני:\n\n**כששני השחקנים הראשיים עמדו יחד באודישן – איזה מתח או ניצוץ לא מתוכנן נוצר ביניהם?**`,
+                    `הנחיית שחקנים אפקטיבית מתמקדת בפעולה:\n\n**איזו הנחיית בימוי מבוססת-פעולה תיתן לשחקן בחזרה במקום להגיד לו 'תהיה עצוב' או 'תהיה כועס'?**`,
+                    `חזרות מקדימות נועדו לגילויים חדשים:\n\n**איזה רגע משחקי מפתיע נולד בחזרה ושגרם לכם לעדכן את התנועה המקורית של הסצנה?**`
+                ],
+                8: [
+                    `ברייקדאון מקצועי מפרק כל סצנה לפרטים הקטנים ביותר:\n\n**האם סימנתם בדף הברייקדאון כל אביזר (Prop) שהדמות מחזיקה ביד כדי שלא יישכח ביום הצילום?**`,
+                    `טסטינג מוקדם חוסך זמן יקר על הסט:\n\n**איזה טסט טכני (בדיקת תאורה, מיקרופון או עדשה) עשיתם כדי לוודא שאין הפתעות ברגע האמת?**`,
+                    `התאמת ארט והלבשה לאופי הדמות:\n\n**מה פריט הלבוש המרכזי של הדמות בסצנה הזו מספר עליה עוד לפני שהיא פותחת את הפה?**`
+                ],
+                9: [
+                    `סאונד נקי הוא תנאי ראשון לסרט מקצועי:\n\n**האם הקפדתם להקליט דקה מלאה של Room Tone (שקט של החלל) בסיום כל סצנה לצורכי עריכה?**`,
+                    `ניהול שטח והספקים:\n\n**איך הצוות שלכם מתמודד עם פיגור בלוח הזמנים של יום הצילומים מבלי להתפשר על השוטים הקריטיים?**`,
+                    `כיסוי מספק (Coverage):\n\n**האם צילמתם קלוז-אפים ואינסרטים הכרחיים שיאפשרו לחבר את הסצנה בעריכה בצורה חלקה?**`
+                ],
+                10: [
+                    `בעריכת אופליין הכלל הוא נאמנות לקצב של הסיפור:\n\n**איזה שוט יפהפה שתכננתם תהיה מוכן לחתוך החוצה (Kill your darlings) כי הוא פוגע בקצב העלילה?**`,
+                    `עריכת סאונד ואונליין מעניקות את הליטוש הסופי:\n\n**באיזו נקודה בסרט שקט מוחלט יהיה עוצמתי ומרגש הרבה יותר מכל מוזיקה דרמטית?**`,
+                    `הכנה למפגש הבגרות:\n\n**אם הבוחן ישאל אותך 'למה בחרת לחתוך את הסצנה דווקא ברגע הזה?', איך תנמק זאת ברמה האומנותית?**`
+                ]
+            };
+
+            const options = bank[currentStationId] || bank[1];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        function openResetModal() {
+            document.getElementById('resetConfirmModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetConfirmModal').classList.add('hidden');
+        }
+
+        function executeResetStation() {
+            const station = STATIONS.find(s => s.id === currentStationId);
+            conversations[currentStationId] = [
+                {
+                    role: 'assistant',
+                    text: `התחלנו מחדש את **${station.name}**! 🎬\n\nבוא נתחיל בשאלה הראשונה והמרכזית:\n**${station.questionFocus}**\n\nשתף/י אותי במחשבות שלך.`
+                }
+            ];
+            closeResetModal();
+            renderChat();
+            triggerAutoSave();
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-300 font-semibold">$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>');
+            html = html.replace(/^[\*\-]\s+(.*)$/gm, '<li class="mr-4 my-1 list-disc text-slate-200 text-right" dir="rtl">$1</li>');
+            html = html.replace(/^(\d+)\.\s+(.*)$/gm, '<div class="mr-2 my-1 flex gap-1.5 text-right" dir="rtl"><span class="text-amber-400 font-bold shrink-0">$1.</span><span>$2</span></div>');
+            html = html.replace(/\n\n/g, '<div class="h-2"></div>');
+            html = html.replace(/\n/g, '<br/>');
+
+            return html;
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function toggleStationsDrawer() {
+            const drawer = document.getElementById('stationsDrawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        function openInfoModal() {
+            openStationDetailSheet();
+        }
+
+        function openStationDetailSheet() {
+            const station = STATIONS.find(s => s.id === currentStationId);
+            if (!station) return;
+
+            document.getElementById('modalStationTag').textContent = `תחנה ${station.id} מתוך 10`;
+            document.getElementById('modalStationName').textContent = station.name;
+
+            const contentEl = document.getElementById('modalStationContent');
+            contentEl.innerHTML = `
+                <div class="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl text-amber-300 mb-3 font-medium text-right" dir="rtl">
+                    <i class="fa-solid fa-bullseye ml-1"></i> שאלת הליבה: ${station.questionFocus}
+                </div>
+                <p class="text-slate-200 text-right" dir="rtl">${station.description}</p>
+                
+                <div class="mt-3 text-right" dir="rtl">
+                    <h4 class="font-bold text-white text-xs mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-check-double text-amber-400"></i> מה נדרש בתיק ההפקה ובמפגש הבגרות:
+                    </h4>
+                    <ul class="space-y-1 text-slate-300 pr-2">
+                        ${station.guidelines.map(g => `<li class="flex items-start gap-1.5"><span class="text-amber-400">•</span><span>${g}</span></li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="mt-3 p-2.5 bg-slate-800/80 rounded-xl border border-slate-700/60 text-right" dir="rtl">
+                    <span class="text-[11px] text-amber-400 font-bold block mb-1">טיפ למפגש הבגרות:</span>
+                    <p class="text-[11px] text-slate-400">הבוחנים מעריכים יכולת לנמק בחירות. אם תדע להסביר למה ויתרת על רעיון לטובת הסיפור, תזכה בנקודות רבות על בגרות אומנותית.</p>
+                </div>
+            `;
+
+            document.getElementById('stationModal').classList.remove('hidden');
+        }
+
+        function closeStationModal() {
+            document.getElementById('stationModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
