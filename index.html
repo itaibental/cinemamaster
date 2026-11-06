@@ -250,6 +250,11 @@
                 <i class="fa-solid fa-circle-user text-amber-400"></i>
                 <span id="headerUserName" class="max-w-[70px] truncate text-[11px]">יוצר/ת</span>
             </button>
+            <!-- חיווי מצב API בלחיצה -->
+            <button onclick="openApiStatusModal()" id="apiStatusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-[11px] font-medium transition active:scale-95 shadow-sm" title="בדוק מצב חיבור ל-Gemini API">
+                <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="apiStatusText" class="text-slate-300">בדיקת API...</span>
+            </button>
             <button onclick="openInfoModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition" title="עזרה ודגשים לתחנה">
                 <i class="fa-solid fa-lightbulb text-amber-400"></i>
             </button>
@@ -349,18 +354,22 @@
 
     <!-- באנר התחנה הפעילה -->
     <div id="stationBanner" class="relative z-10 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border-b border-amber-500/20 px-3.5 py-1.5 flex items-center justify-between text-xs" dir="rtl">
-        <div class="flex items-center gap-2 overflow-hidden">
-            <span id="bannerStationNum" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-[11px] shrink-0">תחנה 1</span>
-            <span id="bannerStationTitle" class="text-slate-200 font-medium truncate">רעיון ותחקיר</span>
+        <div class="max-w-3xl w-full mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2 overflow-hidden">
+                <span id="bannerStationNum" class="font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded text-[11px] shrink-0">תחנה 1</span>
+                <span id="bannerStationTitle" class="text-slate-200 font-medium truncate">רעיון ותחקיר</span>
+            </div>
+            <button onclick="openStationDetailSheet()" class="text-amber-400 text-[11px] underline shrink-0 font-semibold flex items-center gap-1">
+                <span>דרישות</span>
+                <i class="fa-solid fa-chevron-left text-[9px]"></i>
+            </button>
         </div>
-        <button onclick="openStationDetailSheet()" class="text-amber-400 text-[11px] underline shrink-0 font-semibold flex items-center gap-1">
-            <span>דרישות</span>
-            <i class="fa-solid fa-chevron-left text-[9px]"></i>
-        </button>
     </div>
 
     <!-- אזור ההודעות בצ'אט -->
-    <main id="chatMessages" class="flex-1 overflow-y-auto px-4 pt-3 pb-6 space-y-4 relative z-0" dir="rtl"></main>
+    <main id="chatMessages" class="flex-1 overflow-y-auto px-4 pt-3 pb-6 space-y-4 relative z-0" dir="rtl">
+        <div id="chatMessagesInner" class="max-w-3xl mx-auto w-full space-y-4"></div>
+    </main>
 
     <!-- מגירת 10 התחנות (Side Drawer) -->
     <div id="stationsDrawer" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex justify-end" dir="rtl">
@@ -419,6 +428,61 @@
                 <button onclick="logoutStudent()" class="px-3 py-1.5 rounded-lg bg-rose-600/80 text-white text-xs hover:bg-rose-600 font-bold transition flex items-center gap-1.5">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     <span>החלף משתמש</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל חיווי ובדיקת חיבור API -->
+    <div id="apiStatusModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" dir="rtl">
+        <div onclick="closeApiStatusModal()" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-xs bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-2xl z-10 text-right space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-network-wired text-amber-400 text-sm"></i>
+                    <h3 class="font-bold text-white text-sm font-heading">חיווי חיבור Gemini API</h3>
+                </div>
+                <button onclick="closeApiStatusModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-slate-400">סטטוס חיבור:</span>
+                    <span id="modalApiStatusBadge" class="flex items-center gap-1.5 font-bold text-slate-200">
+                        <span id="modalApiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                        <span id="modalApiStatusLabel">בודק...</span>
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-slate-400">מודל פעיל:</span>
+                    <span class="font-mono text-[11px] text-amber-300">gemini-3-flash-preview</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-slate-400">מקור מפתח API:</span>
+                    <span id="modalApiKeySource" class="text-[11px] font-semibold text-slate-300">סביבת מערכת</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-slate-400">זמן מענה (Latency):</span>
+                    <span id="modalApiPing" class="font-mono text-[11px] text-slate-300">-- ms</span>
+                </div>
+            </div>
+
+            <div id="modalApiMessage" class="text-[11px] p-2 rounded-xl bg-slate-950/50 border border-slate-800 text-slate-400 leading-relaxed text-right">
+                לחץ על "בדוק חיבור כעת" כדי לוודא שמנוע ה-AI מוכן למענה סוקרטי וניתוח תמונות.
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex gap-2">
+                <button onclick="runApiPingTest()" id="runPingBtn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>בדוק חיבור עכשיו</span>
+                </button>
+                <button onclick="closeApiStatusModal()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition">
+                    סגור
                 </button>
             </div>
         </div>
@@ -691,7 +755,117 @@
             renderDrawerStations();
             updateStationUI(currentStationId);
             renderChat();
+            
+            // בדיקת סטטוס API ראשונית
+            checkApiConnectionStatus();
         });
+
+        /* בדיקת סטטוס חיבור ה-API של Gemini */
+        let lastApiStatus = 'unknown'; // 'connected', 'fallback', 'error'
+        let lastPingTime = 0;
+
+        async function checkApiConnectionStatus() {
+            updateApiStatusBadge('checking', 'בודק...');
+            const startTime = performance.now();
+            const apiKey = studentProfile.apiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: "ping" }] }],
+                generationConfig: { maxOutputTokens: 2, temperature: 0 }
+            };
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                lastPingTime = Math.round(performance.now() - startTime);
+
+                if (response.ok) {
+                    lastApiStatus = 'connected';
+                    updateApiStatusBadge('connected', 'Gemini מחובר');
+                    updateModalStatusUI(true, 'מחובר ותקין', `${lastPingTime} ms`, 'חיבור ישיר ל-Gemini פעיל ומוכן לעבודה.');
+                } else {
+                    lastApiStatus = 'fallback';
+                    updateApiStatusBadge('fallback', 'מנוע מקומי');
+                    updateModalStatusUI(false, 'מנוע מקומי פעיל', '--', `ה-API החזיר קוד שגיאה ${response.status}. המערכת פועלת כרגע במצב מנטור מקומי.`);
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                lastApiStatus = 'fallback';
+                updateApiStatusBadge('fallback', 'מנוע מקומי');
+                updateModalStatusUI(false, 'מנוע מקומי פעיל', '--', 'לא התקבלה תגובה משרת ה-API. המנטור עובד באופן מלא במצב גיבוי סוקרטי מקומי.');
+            }
+        }
+
+        function updateApiStatusBadge(status, text) {
+            const badge = document.getElementById('apiStatusBadge');
+            const dot = document.getElementById('apiStatusDot');
+            const label = document.getElementById('apiStatusText');
+            if (!badge || !dot || !label) return;
+
+            label.textContent = text;
+            dot.className = "w-2 h-2 rounded-full";
+
+            if (status === 'connected') {
+                dot.classList.add('bg-emerald-400', 'animate-pulse');
+                badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-400 transition active:scale-95 shadow-sm";
+            } else if (status === 'checking') {
+                dot.classList.add('bg-amber-400', 'animate-ping');
+                badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-[11px] font-medium text-slate-300 transition active:scale-95 shadow-sm";
+            } else {
+                dot.classList.add('bg-sky-400');
+                badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-[11px] font-medium text-sky-400 transition active:scale-95 shadow-sm";
+            }
+        }
+
+        function updateModalStatusUI(isConnected, label, latency, message) {
+            const modalLabel = document.getElementById('modalApiStatusLabel');
+            const modalDot = document.getElementById('modalApiStatusDot');
+            const modalPing = document.getElementById('modalApiPing');
+            const modalSource = document.getElementById('modalApiKeySource');
+            const modalMsg = document.getElementById('modalApiMessage');
+
+            if (modalLabel) modalLabel.textContent = label;
+            if (modalPing) modalPing.textContent = latency;
+            if (modalMsg) modalMsg.textContent = message;
+
+            if (modalSource) {
+                modalSource.textContent = studentProfile.apiKey ? "מפתח API אישי" : "סביבת פיתוח / ברירת מחדל";
+            }
+
+            if (modalDot) {
+                modalDot.className = "w-2 h-2 rounded-full";
+                modalDot.classList.add(isConnected ? 'bg-emerald-400' : 'bg-sky-400');
+            }
+        }
+
+        function openApiStatusModal() {
+            document.getElementById('apiStatusModal').classList.remove('hidden');
+        }
+
+        function closeApiStatusModal() {
+            document.getElementById('apiStatusModal').classList.add('hidden');
+        }
+
+        async function runApiPingTest() {
+            const btn = document.getElementById('runPingBtn');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>בודק...</span>`;
+            btn.disabled = true;
+
+            await checkApiConnectionStatus();
+
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
 
         /* התחברות עם Google */
         async function handleGoogleSignIn(e) {
@@ -868,7 +1042,7 @@
         }
 
         function renderChat() {
-            const container = document.getElementById('chatMessages');
+            const container = document.getElementById('chatMessagesInner') || document.getElementById('chatMessages');
             const history = conversations[currentStationId] || [];
 
             container.innerHTML = history.map((msg) => {
@@ -884,7 +1058,7 @@
                         }">
                             <i class="fa-solid ${isAssistant ? 'fa-clapperboard' : 'fa-user'}"></i>
                         </div>
-                        <div class="w-fit max-w-[88%] sm:max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap select-text text-right ${
+                        <div class="w-fit max-w-[88%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap select-text text-right ${
                             isAssistant 
                             ? 'bg-slate-800/95 text-slate-100 border border-slate-700/70 chat-bubble-ai' 
                             : 'bg-amber-500 text-slate-950 font-medium chat-bubble-user shadow-amber-500/10'
@@ -1011,10 +1185,12 @@
                 const aiResponse = await callCinemaMentorAPI(userText, currentImg);
                 removeTypingIndicator();
                 conversations[currentStationId].push({ role: 'assistant', text: aiResponse });
+                updateApiStatusBadge('connected', 'Gemini מחובר');
                 renderChat();
             } catch (err) {
                 console.warn("API fallback to local smart socratic engine:", err.message);
                 removeTypingIndicator();
+                updateApiStatusBadge('fallback', 'מנוע מקומי');
                 const fallbackReply = generateSmartSocraticResponse(userText);
                 conversations[currentStationId].push({ role: 'assistant', text: fallbackReply });
                 renderChat();
@@ -1027,7 +1203,7 @@
 
         function showTypingIndicator() {
             removeTypingIndicator();
-            const container = document.getElementById('chatMessages');
+            const container = document.getElementById('chatMessagesInner') || document.getElementById('chatMessages');
             const typingHtml = `
                 <div id="typingIndicator" class="flex items-start gap-2.5" dir="rtl">
                     <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-slate-950 font-bold flex items-center justify-center shrink-0 text-xs">
