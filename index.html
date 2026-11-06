@@ -152,6 +152,38 @@
                     </label>
                 </div>
 
+                <!-- חיבור מפתח API בלחיצת כפתור -->
+                <div class="p-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl space-y-2 text-right">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-key text-[10px]"></i> חיבור API אישי (חינם)
+                        </span>
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" 
+                           class="text-[10px] text-amber-400 hover:text-amber-300 underline font-medium flex items-center gap-1">
+                            <span>הפק מפתח ב-Google</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+                        </a>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input 
+                            type="password" 
+                            id="customApiKeyInput" 
+                            placeholder="הדבק מפתח AIzaSy..."
+                            class="flex-1 bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none font-mono"
+                        />
+                        <button 
+                            type="button" 
+                            onclick="pasteApiKeyFromClipboard()" 
+                            class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs rounded-lg border border-slate-700 transition flex items-center gap-1 shrink-0" 
+                            title="הדבק בלחיצה אחת מהלוח"
+                        >
+                            <i class="fa-regular fa-paste"></i>
+                            <span>הדבק</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400">בלחיצה אחת: לחצו על "הפק מפתח", העתיקו אותו, ולחצו "הדבק". המפתח נשמר במכשיר.</p>
+                </div>
+
                 <!-- הודעת שגיאה בהתחברות (אם יש) -->
                 <div id="loginErrorMsg" class="hidden text-[11px] text-rose-400 bg-rose-950/40 border border-rose-800/60 p-2 rounded-lg text-center"></div>
 
@@ -605,8 +637,28 @@
         let studentProfile = {
             name: "",
             gender: "male",
+            apiKey: "",
             isLoggedIn: false
         };
+
+        // פונקציית הדבקה בלחיצה אחת
+        async function pasteApiKeyFromClipboard() {
+            const input = document.getElementById('customApiKeyInput');
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        input.value = text.trim();
+                        studentProfile.apiKey = text.trim();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log("Clipboard direct access restricted, focusing field");
+            }
+            input.focus();
+            input.select();
+        }
 
         function initDefaultConversations() {
             STATIONS.forEach(s => {
@@ -687,9 +739,11 @@
             const name = nameInput.value.trim() || "יוצר/ת";
             const genderRadio = document.querySelector('input[name="studentGender"]:checked');
             const gender = genderRadio ? genderRadio.value : 'male';
+            const apiKeyInput = document.getElementById('customApiKeyInput');
 
             studentProfile.name = name;
             studentProfile.gender = gender;
+            studentProfile.apiKey = apiKeyInput ? apiKeyInput.value.trim() : "";
             studentProfile.isLoggedIn = true;
 
             applyStudentProfileUI();
@@ -997,7 +1051,7 @@
 
         async function callCinemaMentorAPI(userPrompt, imageAttachment = null) {
             const currentStation = STATIONS.find(s => s.id === currentStationId);
-            const apiKey = "";
+            const apiKey = studentProfile.apiKey || "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
             const genderPrompt = studentProfile.gender === 'female' 
